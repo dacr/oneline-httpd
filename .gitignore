@@ -1,2 +1,16 @@
+*.jar
 *.class
-*.log
+dist/*
+target/
+*.pscala
+*~
+.classpath
+.project
+.cache
+.settings
+.ensime
+.DS_Store
+dummy.log
+.idea
+myStoryPart.txt
+
