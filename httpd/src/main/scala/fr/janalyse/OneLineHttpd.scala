@@ -6,10 +6,13 @@ import akka.http.scaladsl._
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 
-class OneLineHttpdServer(serverName:String, routes:List[Route]) {
+
+
+class OneLineHttpdServer(serverName:String, routes:List[Route], port:Int, interface:String) {
   val logger = org.slf4j.LoggerFactory.getLogger(getClass)
-
 
   implicit val system = ActorSystem(serverName)
   implicit val materializer = ActorMaterializer()
@@ -30,6 +33,10 @@ class OneLineHttpdServer(serverName:String, routes:List[Route]) {
       } // and shutdown when done
   }
 
+  def waitForShutdown:Unit = {
+    Await.result(system.whenTerminated, Duration.Inf)
+  }
+
 }
 
 case class OneLineHttpd(routes:List[Route]=Nil) {
@@ -45,14 +52,16 @@ case class OneLineHttpd(routes:List[Route]=Nil) {
   }
 
 
-  def start(serverName:String="default"):OneLineHttpdServer = {
-    new OneLineHttpdServer(serverName, routes)
+  def start(serverName:String="default", port:Int=8080, interface:String="0.0.0.0"):OneLineHttpdServer = {
+    new OneLineHttpdServer(serverName, routes, port, interface)
   }
 
 }
 
+
 object OneLineHttpd {
   def main(args:Array[String]): Unit = {
-    OneLineHttpd().withRoute("httpd/example").start()
+    val server = OneLineHttpd().withRoute("httpd/example").start(port=8080)
+    server.waitForShutdown
   }
 }
